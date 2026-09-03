@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Encuesta Dinámica dpvale</title>
+    <style>
+        :root {
+            --dp-blue: #0A1B5C;
+            --dp-light-blue: #2340C4;
+            --dp-red: #E30030;
+            --white: #FFFFFF;
+            --gray-bg: #F8F9FA;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--gray-bg);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .quiz-container {
+            background-color: var(--white);
+            border-radius: 20px;
+            box-shadow: 0 12px 35px rgba(10, 27, 92, 0.08);
+            width: 100%;
+            max-width: 650px;
+            overflow: hidden;
+            margin-top: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .header {
+            background-color: var(--dp-blue);
+            color: var(--white);
+            padding: 25px 20px;
+            text-align: center;
+            border-bottom: 4px solid var(--dp-red);
+        }
+
+        .header h1 { 
+            margin: 0; 
+            font-size: 22px; 
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+
+        .content { 
+            padding: 35px 30px; 
+        }
+
+        input[type="text"] {
+            width: 85%;
+            padding: 12px 15px;
+            margin: 25px 0;
+            border: 1px solid #dcdcdc;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s, box-shadow 0.3s;
+            outline: none;
+        }
+
+        input[type="text"]:focus {
+            border-color: var(--dp-light-blue);
+            box-shadow: 0 0 8px rgba(35, 64, 196, 0.2);
+        }
+
+        .question-text {
+            font-size: 19px;
+            font-weight: 600;
+            margin-bottom: 25px;
+            color: var(--dp-blue);
+            line-height: 1.5;
+        }
+
+        .options-container {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .option-btn {
+            background-color: var(--white);
+            border: 1px solid #e0e0e0;
+            color: var(--dp-blue);
+            padding: 15px 18px;
+            border-radius: 12px;
+            font-size: 15px;
+            cursor: pointer;
+            transition: transform 0.2s ease, background-color 0.3s ease, border-color 0.3s ease, box-shadow 0.2s ease;
+            text-align: left;
+            font-weight: 500;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.02);
+        }
+
+        .option-btn:hover:not(:disabled) {
+            background-color: #f4f6fb;
+            border-color: var(--dp-light-blue);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(35, 64, 196, 0.1);
+        }
+
+        .option-btn.correct { 
+            background-color: #28a745 !important; 
+            border-color: #28a745 !important; 
+            color: white !important; 
+            box-shadow: 0 4px 15px rgba(40, 167, 69, 0.2) !important;
+        }
+        
+        .option-btn.wrong { 
+            background-color: var(--dp-red) !important; 
+            border-color: var(--dp-red) !important; 
+            color: white !important; 
+            box-shadow: 0 4px 15px rgba(227, 0, 48, 0.2) !important;
+        }
+
+        .progress-bar { height: 6px; background-color: #f0f0f0; width: 100%; }
+        .progress-fill { height: 100%; background-color: var(--dp-red); width: 0%; transition: width 0.6s cubic-bezier(0.25, 0.8, 0.25, 1); }
+
+        .action-btn {
+            background-color: var(--dp-red);
+            color: white;
+            border: none;
+            padding: 14px 35px;
+            font-size: 17px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 600;
+            margin-top: 15px;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+            box-shadow: 0 4px 12px rgba(227, 0, 48, 0.2);
+        }
+        
+        .action-btn:hover { 
+            background-color: #c9002a; 
+            transform: translateY(-1px);
+        }
+        
+        .hidden { display: none !important; }
+
+        .fade-in { animation: fadeIn 0.4s ease forwards; }
+        .fade-out { animation: fadeOut 0.3s ease forwards; }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes fadeOut {
+            from { opacity: 1; transform: translateY(0); }
+            to { opacity: 0; transform: translateY(-10px); }
+        }
+
+        .feedback-item {
+            background: #fff;
+            border-left: 4px solid var(--dp-light-blue);
+            padding: 18px;
+            margin-bottom: 18px;
+            border-radius: 8px;
+            text-align: left;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+            border: 1px solid #f0f0f0;
+            border-left-width: 4px;
+        }
+        .feedback-item.error { border-left-color: var(--dp-red); }
+        .feedback-item.success { border-left-color: #28a745; }
+        .feedback-q { font-weight: 600; margin-bottom: 10px; color: var(--dp-blue); font-size: 15px;}
+        .feedback-ans { font-size: 14px; margin-bottom: 6px; }
+        .feedback-exp { font-size: 14px; color: #666; font-style: italic; margin-top: 12px; padding-top: 10px; border-top: 1px solid #eee;}
+    </style>
+</head>
+<body>
+
+    <div class="quiz-container">
+        <div class="header">
+            <h1>dp/vale - Evaluación Dinámica</h1>
+        </div>
+        
+        <div class="progress-bar">
+            <div class="progress-fill" id="progress"></div>
+        </div>
+
+        <div class="content">
+            <!-- INICIO -->
+            <div id="start-screen" class="fade-in" style="text-align: center;">
+                <h2 style="color: var(--dp-blue); font-weight: 600;">¡Bienvenido!</h2>
+                <p style="color: #555; line-height: 1.5;">El sistema seleccionará 10 preguntas al azar. Ingresa tu nombre para comenzar.</p>
+                <input type="text" id="distribuidor-nombre" placeholder="Nombre completo del Distribuidor">
+                <br>
+                <button class="action-btn" onclick="iniciarEncuesta()">Comenzar</button>
+            </div>
+
+            <!-- PREGUNTAS -->
+            <div id="quiz-screen" class="hidden">
+                <div id="quiz-content" class="fade-in">
+                    <div class="question-text" id="question"></div>
+                    <div class="options-container" id="options"></div>
+                </div>
+            </div>
+
+            <!-- RESULTADOS -->
+            <div id="result-screen" class="hidden" style="text-align: center;">
+                <div class="fade-in">
+                    <h2 style="color: var(--dp-blue);">¡Evaluación Completada!</h2>
+                    <p id="mensaje-final" style="color: #555;"></p>
+                    <div style="font-size: 45px; font-weight: bold; color: var(--dp-light-blue); margin: 25px 0;" id="score"></div>
+                    
+                    <button class="action-btn" id="enviar-btn" onclick="enviarCorreo()">Enviar Resultados al Gerente</button>
+                    <p id="estado-envio" style="margin-top: 15px; font-size: 14px;"></p>
+
+                    <hr style="margin: 35px 0; border: 0; border-top: 1px solid #eaeaea;">
+                    <h3 style="color: var(--dp-blue); margin-bottom: 20px;">Resumen y Retroalimentación</h3>
+                    <div id="feedback-container"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const questionBank = [
+            { q: "¿Cuál es tu bonificación directa por realizar tu pago puntual total?", correct: "15%", wrong: ["10%", "20%", "5%"], exp: "Ganas el 15% de bonificación directa sobre tu pago al ser puntual en tu quincena[cite: 1]." },
+            { q: "Al llenar un dp/vale físico, ¿qué área NUNCA debes llenar?", correct: "El área del pagaré", wrong: ["Los datos del cliente", "La fecha de entrega", "El teléfono del cliente"], exp: "El área de pagaré NUNCA debe de llenarse por el distribuidor, de lo contrario se anula el vale[cite: 1]." },
+            { q: "¿Qué días puedes descargar tu estado de cuenta desde la app dpvale?", correct: "Los días 8 y 22 de cada mes", wrong: ["Los días 1 y 15", "Los días 12 y 27", "Al final de cada mes"], exp: "En la app se descarga los días 8 y 22. Físicamente en oficina son los días 12 y 27[cite: 1]." },
+            { q: "¿Qué herramienta te ayuda a decidir cuánto prestarle a un cliente sin sobreendeudarlo?", correct: "Calculadora de capacidad de pago", wrong: ["Calculadora dppuntos", "Evaluador CANNS", "Buzón de crédito"], exp: "Esta calculadora te apoya a calcular la capacidad de pago del cliente previo a otorgarle un vale[cite: 1]." },
+            { q: "¿Hasta qué monto te cubre el Seguro contra Robo con violencia de tu pago quincenal?", correct: "$50,000 sin deducible", wrong: ["$20,000", "$30,000 con deducible", "$100,000"], exp: "Cubre el robo con violencia hasta $50,000 M.N., un evento al año y sin pago de deducible[cite: 1]." },
+            { q: "Según los tips de éxito, ¿cuál es una práctica correcta al entregar vales?", correct: "Entregar solo un vale por cliente y esperar a que liquide", wrong: ["Dar varios vales a la vez para vender más", "Entregar vales a empleados de dportenis", "Autofinanciarte con el dinero"], exp: "Espera a que liquiden el vale actual antes de entregar otro para evitar el sobreendeudamiento[cite: 1]." },
+            { q: "¿Cuál es el límite de la línea de crédito revolvente para préstamos en efectivo (dpdinero)?", correct: "$13,000", wrong: ["$5,000", "$10,000", "$20,000"], exp: "Puedes ofrecer una línea revolvente de hasta $13,000 para préstamos de dinero[cite: 1]." },
+            { q: "Si realizas tu pago 3 o más días ANTES de la fecha, ¿qué beneficio extra obtienes?", correct: "30% de dppuntos adicionales", wrong: ["Descuento del 20%", "Un viaje garantizado", "Subir al nivel Platino automáticamente"], exp: "Ganas +30% de puntos adicionales sobre los dppuntos ganados por pago puntual[cite: 1]." },
+            { q: "¿Qué documento es indispensable que presente tu cliente en tienda para canjear el vale?", correct: "Identificación oficial", wrong: ["Comprobante de domicilio", "Estado de cuenta", "Su tarjeta de débito"], exp: "Para canjear el vale, tu cliente debe presentar su identificación oficial (INE, Pasaporte)[cite: 1]." },
+            { q: "¿Para qué sirve el Evaluador CANNS en la aplicación?", correct: "Para contestar un cuestionario y tomar mejores decisiones sobre un prospecto", wrong: ["Para calcular los intereses", "Para cobrar mediante WhatsApp", "Para subir de nivel"], exp: "Contestas un cuestionario acerca del prospecto para tomar mejores decisiones al otorgarle un vale[cite: 1]." },
+            { q: "¿Qué pasa si el distribuidor fallece?", correct: "El Seguro de Vida liquida el saldo total de la línea de crédito", wrong: ["La deuda pasa a sus hijos", "La deuda pasa a su aval", "Se congelan los intereses pero se debe pagar"], exp: "El seguro liquida el saldo total de tu línea de crédito, liberando a tu familia y aval[cite: 1]." },
+            { q: "¿En qué plataformas digitales pueden comprar los clientes con dpvale?", correct: "dportenis.mx y dpstreet.mx", wrong: ["Solo en tiendas físicas", "Amazon y MercadoLibre", "redphone.mx"], exp: "Tus clientes podrán comprar en línea a través de dportenis.mx y dpstreet.mx[cite: 1]." },
+            { q: "¿Cuántas quincenas abarca el plazo máximo para un préstamo dpdinero?", correct: "20 quincenas", wrong: ["12 quincenas", "16 quincenas", "24 quincenas"], exp: "El tabulador de préstamos indica plazos desde 8 hasta 20 quincenas[cite: 1]." },
+            { q: "¿Qué nivel de Club dppuntos se alcanza con un pago promedio quincenal de $120,000 en adelante?", correct: "Platino", wrong: ["Diamante", "Oro", "Plata"], exp: "El nivel Platino requiere un pago puntual promedio de $120,000 en adelante[cite: 1]." },
+            { q: "¿Cuánto tiempo de vigencia tienen los dppuntos acumulados en los niveles básicos?", correct: "2 años", wrong: ["1 año", "No caducan", "4 años"], exp: "La vigencia general es de 2 años (4 años exclusivos para Diamante y Platino)[cite: 1]." },
+            { q: "¿Cuál de los siguientes NO es un valor de Grupo dportenis?", correct: "Individualismo", wrong: ["Honestidad", "Innovación", "Compromiso"], exp: "Los valores son Honestidad, Innovación, Compromiso, Excelencia y Respeto[cite: 1]." },
+            { q: "¿Qué beneficio extra obtienes al realizar seis pagos quincenales consecutivos mayores a $3,000?", correct: "Préstamo personal con tasa preferencial", wrong: ["Un auto del año", "Aumento del 50% de línea de crédito", "Seguro de auto gratis"], exp: "Obtendrás un préstamo personal con tasa de interés preferencial[cite: 1]." },
+            { q: "¿Qué días debes programar tu cobranza para asegurar tus pagos?", correct: "Los días 15 y último de cada mes", wrong: ["Los días 1 y 20", "Cada fin de semana", "Cualquier día del mes"], exp: "Programa tu cobranza para que los días 15 y último de cada mes cuentes con el pago total[cite: 1]." },
+            { q: "¿Qué marca del grupo te permite ofrecer a tus clientes muebles, televisiones y línea blanca?", correct: "dphome", wrong: ["redphone", "dpstreet", "dpdinero"], exp: "dphome es la línea para crear tu hogar con muebles, teles, minisplits, etc[cite: 1]." },
+            { q: "¿Qué servicio ofrece la marca redphone?", correct: "Servicio de telefonía e internet móvil", wrong: ["Venta de computadoras", "Servicios bancarios", "Seguros de hogar"], exp: "redphone ofrece servicio de telefonía e internet móvil (+ gigas - precio)[cite: 1]." },
+            { q: "¿Qué debes hacer de inmediato si extravías un vale físico?", correct: "Comunicarte a la oficina dpvale para reportarlo", wrong: ["Cobrarle al cliente de todos modos", "Llenar uno nuevo sin avisar", "Bloquear la app"], exp: "Si es un vale físico, comunícate inmediatamente a la oficina dpvale para reportarlo[cite: 1]." },
+            { q: "¿Qué debes hacer si quieres cancelar un vale electrónico que enviaste por error?", correct: "Cancelarlo a través de la app dpvale", wrong: ["Llamar a la policía", "Decirle al cliente que lo borre", "Ya no se puede cancelar"], exp: "Si es un vale electrónico, cancélelo directamente a través de la app dpvale[cite: 1]." },
+            { q: "¿Qué debes marcar en el vale físico si quieres que el cliente te empiece a pagar a partir de la próxima quincena?", correct: "Marcar NO en la casilla de promoción Compra hoy y paga hasta", wrong: ["Marcar SÍ en Compra Hoy", "No poner fecha", "Tachar el pagaré"], exp: "Si deseas que te empiece a pagar a partir de la próxima quincena marca la casilla 'NO'[cite: 1]." },
+            { q: "¿Con qué dígito comienza siempre tu número de distribuidor para iniciar sesión en la App?", correct: "7 (siete)", wrong: ["1 (uno)", "0 (cero)", "9 (nueve)"], exp: "Recuerda que el número de distribuidor comienza con el dígito 7[cite: 1]." },
+            { q: "¿Qué opciones te da la app para compartirle el vale electrónico al cliente?", correct: "WhatsApp y SMS", wrong: ["Solo Bluetooth", "Impresión térmica obligatoria", "Facebook y Twitter"], exp: "La app da las opciones de 'Enviar por whatsapp' y 'Enviar por SMS'[cite: 1]." },
+            { q: "Al enviar un vale de dinero (Financiero) por la app, ¿qué dato muestra que puede variar?", correct: "La fecha del primer pago", wrong: ["El nombre del distribuidor", "La tasa de interés global", "El valor del seguro"], exp: "La app advierte: 'La fecha del primer pago puede variar dependiendo de cuándo sea canjeado el vale'[cite: 1]." },
+            { q: "¿Qué método de pago debe elegir el cliente en el carrito de compras de dportenis.mx?", correct: "Pago con dpvale electrónico", wrong: ["Tarjeta de crédito externa", "Pago contra entrega", "Transferencia SPEI"], exp: "El cliente debe seleccionar 'Métodos DP' y luego 'Pago con dpvale electrónico'[cite: 1]." },
+            { q: "Durante una compra web, ¿cómo valida el cliente que él es el dueño del vale electrónico?", correct: "Con un código de verificación que recibe por SMS", wrong: ["Con una llamada al gerente", "Subiendo una foto a la web", "Enviando un correo"], exp: "Deberá capturar el código de verificación que recibió por SMS en el teléfono registrado[cite: 1]." },
+            { q: "¿Cuál es el rango de edad permitido para otorgar un préstamo de dpdinero?", correct: "18 a 70 años (con seguro)", wrong: ["21 a 60 años", "18 a 90 años", "16 a 65 años"], exp: "Debe tener entre 18 y 70 años. Los mayores de 70 pueden tramitarlo pero con exclusión del seguro[cite: 1]." },
+            { q: "Si un cliente solicita un préstamo dpdinero, ¿dónde se le deposita el efectivo?", correct: "A una tarjeta de débito y/o CLABE interbancaria propia", wrong: ["En vales de despensa", "Se le da en efectivo en caja", "A la tarjeta del distribuidor"], exp: "El cliente requerirá tarjeta de débito y/o CLABE interbancaria propia para el depósito[cite: 1]." },
+            { q: "El seguro de vida para el cliente final tiene un costo. ¿De cuánto es?", correct: "$20 pesos quincenales", wrong: ["$50 pesos quincenales", "Es 100% gratuito siempre", "$100 pesos al mes"], exp: "Por $20 pesos quincenales, tu cliente está protegido desde la fecha de compra[cite: 1]." },
+            { q: "¿Qué servicio médico gratuito incluye el seguro tanto para clientes como para distribuidores?", correct: "Orientación médica telefónica y por videollamada (24/7)", wrong: ["Cirugías estéticas", "Dentista mensual", "Ambulancia aérea"], exp: "Incluye Orientación médica telefónica (OMT) y videollamada, ilimitada sin costo 24/7[cite: 1]." },
+            { q: "Para que el seguro del distribuidor se active o sea válido, ¿qué condición se requiere?", correct: "Tener pagos puntuales y al corriente en el estado de cuenta", wrong: ["Pagar una membresía anual", "Ser nivel Platino", "Tener más de 5 años en la empresa"], exp: "El requisito es tener pagos puntuales y al corriente en tu estado de cuenta[cite: 1]." },
+            { q: "Los distribuidores con un pago quincenal a partir de $40,000.01 tienen un beneficio exclusivo en su seguro. ¿Cuál es?", correct: "Indemnización adicional de $200,000 M.N.", wrong: ["Viaje pagado a Cancún", "Seguro de auto deportivo", "Línea de crédito infinita"], exp: "Beneficio EXCLUSIVO para distribuidores con pago quincenal a partir de $40,000.01: Indemnización de $200,000[cite: 1]." },
+            { q: "¿Cuáles son las tres partes principales de tu Estado de Cuenta?", correct: "Relación de cobro, Ficha de pago en banco y Comprobante de abono", wrong: ["Buzón de quejas, Facturas y Pagarés", "Catálogo, Precios y Descuentos", "Historial clínico, Seguros y Afores"], exp: "Se divide en 3: A. Relación de cobro a clientes, B. Ficha de pago en banco, C. Comprobante de abono[cite: 1]." },
+            { q: "Si realizas tu depósito en una practicaja de BBVA, ¿qué información debes teclear?", correct: "Número de convenio y Referencia", wrong: ["Solo el nombre del cliente", "Tu RFC", "El código del vale"], exp: "Debes teclear el número de convenio (ej. 1385526) y la referencia que aparece en tu ficha[cite: 1]." },
+            { q: "Si pagas en un cajero Banorte (sin tarjeta), ¿cuál es el límite de billetes que puedes ingresar a la vez?", correct: "Hasta 30 billetes juntos (no acepta monedas)", wrong: ["100 billetes", "Solo billetes de $500", "No hay límite"], exp: "Se pueden ingresar hasta 30 billetes juntos de cualquier denominación. No acepta monedas[cite: 1]." },
+            { q: "¿Cómo se llama la plataforma de capacitación oficial de dpvale para tu desarrollo personal y de negocio?", correct: "dp/conmigo", wrong: ["dp/escuela", "Universidad dportenis", "Capacitación Total"], exp: "dp/conmigo es tu espacio de capacitación (www.dpconmigo.com.mx)[cite: 1]." },
+            { q: "¿Qué curso de dp/conmigo es fundamental que tomes al iniciar tu negocio?", correct: "Inducción a dpvale", wrong: ["Ventas por catálogo 101", "Cómo usar Facebook", "Finanzas Wall Street"], exp: "Realiza el curso 'Inducción a dpvale' en la sección de Formación / Programas especiales[cite: 1]." },
+            { q: "¿Dónde debes registrar los datos de tu Tarjeta Digital Club dppuntos para poder acumular y canjear?", correct: "En clubdppuntos.mx o llamando al CAT", wrong: ["En el banco", "En la tienda física", "No se registra"], exp: "Registra tus datos en clubdppuntos.mx las 24 hrs o llama al Centro de Atención Telefónica[cite: 1]." },
+            { q: "Las revisiones para subir o bajar de nivel (Nivelaciones) se realizan 4 veces al año. ¿En qué meses?", correct: "Enero, abril, julio y octubre", wrong: ["Febrero, mayo, agosto, noviembre", "Solo en diciembre", "Cada 6 meses"], exp: "Las nivelaciones se realizan en enero, abril, julio y octubre[cite: 1]." },
+            { q: "Si realizas un pago PARCIAL (no el total de la quincena), ¿cuántos dppuntos acumulas?", correct: "Ninguno, los pagos parciales no acumulan dppuntos", wrong: ["La mitad de los puntos", "10 puntos de consuelo", "El doble de puntos"], exp: "El porcentaje depende del pago puntual del 100%. Los pagos parciales no acumulan dppuntos[cite: 1]." },
+            { q: "Si el distribuidor paga 2 días antes de la fecha, ¿qué porcentaje de puntos adicionales gana?", correct: "+20%", wrong: ["+10%", "+30%", "+50%"], exp: "Si realizas tu pago 2 días antes de la fecha, ganas +20%[cite: 1]." },
+            { q: "¿Qué premio especial se otorga al distribuidor por lograr 12 pagos puntuales consecutivos?", correct: "Bono semestral (cantidad de dppuntos según el nivel)", wrong: ["Cancelación de deuda", "Una pantalla plana directa", "Seguro de vida doble"], exp: "Existe el 'Bono semestral por 12 pagos puntuales consecutivos' que otorga puntos extras según tu nivel[cite: 1]." },
+            { q: "En el programa Club dppuntos, ¿en qué meses se da un bono especial por subir de nivel o mantener el nivel Platino?", correct: "Enero y julio", wrong: ["Diciembre y junio", "Cada mes", "Marzo y septiembre"], exp: "Bono por subir de nivel o mantener nivel platino en enero y julio[cite: 1]." },
+            { q: "Si canjeas tus dppuntos por un producto del catálogo digital y llega defectuoso, ¿cuántos días tienes de garantía?", correct: "10 días naturales a partir de la recepción", wrong: ["30 días hábiles", "1 año completo", "No hay garantía"], exp: "El producto cuenta con garantía por defecto de fábrica de 10 días naturales a partir de la recepción[cite: 1]." },
+            { q: "Al canjear dppuntos por un viaje, ¿cuánto tiempo de vigencia tiene el certificado emitido?", correct: "30 días naturales a partir de la fecha de canje", wrong: ["1 año", "15 días", "No tiene caducidad"], exp: "La vigencia para utilizar el certificado será de 30 días naturales a partir de la fecha de canje[cite: 1]." },
+            { q: "Según los tips de éxito, ¿qué debes hacer si tienes problemas para cobrar a tus clientes?", correct: "Contactar a dpvale para recibir asesoría, NUNCA autofinanciarte", wrong: ["Pedir un préstamo en el banco", "Empeñar tus cosas", "Esconderte"], exp: "Ante problemas, evita autofinanciarte. Contáctanos para recibir asesoramiento[cite: 1]." },
+            { q: "Si el cliente tramita una línea revolvente de dinero (dpdinero), ¿puede pedir varios préstamos a la vez?", correct: "Sí, siempre y когда la suma total no exceda los $13,000", wrong: ["No, solo uno a la vez", "Sí, sin límite de monto", "Sí, pero solo en diciembre"], exp: "Los clientes pueden solicitar uno o varios préstamos... siempre y cuando la suma total no exceda los $13,000[cite: 1]." },
+            { q: "¿Qué regla de oro debes recordar sobre los vales y los empleados de Grupo dportenis?", correct: "No otorgues vales a empleados de Grupo dportenis", wrong: ["Darles descuento especial", "Solo darles vales de calzado, no de dinero", "Prestarles sin límite"], exp: "El Tip de Éxito número 10 indica explícitamente: 'No otorgues vales a empleados de Grupo dportenis'[cite: 1]." }
+        ];
+
+        let activeQuestions = [];
+        let currentQ = 0;
+        let score = 0;
+        let nombreDistribuidor = "";
+        let userResponses = [];
+
+        const startScreen = document.getElementById('start-screen');
+        const quizScreen = document.getElementById('quiz-screen');
+        const resultScreen = document.getElementById('result-screen');
+        const quizContent = document.getElementById('quiz-content');
+        const questionEl = document.getElementById('question');
+        const optionsEl = document.getElementById('options');
+        const progressEl = document.getElementById('progress');
+        const feedbackContainer = document.getElementById('feedback-container');
+
+        function shuffle(array) {
+            let currentIndex = array.length, randomIndex;
+            while (currentIndex != 0) {
+                randomIndex = Math.floor(Math.random() * currentIndex);
+                currentIndex--;
+                [array[currentIndex], array[randomIndex]] = [array[randomIndex], array[currentIndex]];
+            }
+            return array;
+        }
+
+        function iniciarEncuesta() {
+            const input = document.getElementById('distribuidor-nombre');
+            if(input.value.trim() === "") {
+                alert("Ingresa tu nombre para comenzar.");
+                input.focus();
+                return;
+            }
+            nombreDistribuidor = input.value;
+            
+            activeQuestions = shuffle([...questionBank]).slice(0, 10);
+            
+            activeQuestions.forEach(q => {
+                let allOptions = [q.correct, ...q.wrong];
+                q.shuffledOptions = shuffle(allOptions);
+            });
+
+            startScreen.classList.remove('fade-in');
+            startScreen.classList.add('fade-out');
+            
+            setTimeout(() => {
+                startScreen.classList.add('hidden');
+                quizScreen.classList.remove('hidden');
+                loadQuestion();
+            }, 300);
+        }
+
+        function loadQuestion() {
+            const q = activeQuestions[currentQ];
+            questionEl.textContent = `Pregunta ${currentQ + 1} de 10: ${q.q}`;
+            optionsEl.innerHTML = '';
+            
+            const progress = (currentQ / 10) * 100;
+            progressEl.style.width = progress + '%';
+
+            q.shuffledOptions.forEach(opt => {
+                const btn = document.createElement('button');
+                btn.classList.add('option-btn');
+                btn.textContent = opt;
+                btn.onclick = () => checkAnswer(opt, btn, q);
+                optionsEl.appendChild(btn);
+            });
+
+            quizContent.classList.remove('fade-out');
+            quizContent.classList.add('fade-in');
+        }
+
+        function checkAnswer(selectedOpt, btn, qContext) {
+            const allBtns = optionsEl.querySelectorAll('.option-btn');
+            allBtns.forEach(b => b.disabled = true);
+
+            const isCorrect = (selectedOpt === qContext.correct);
+            
+            userResponses.push({
+                question: qContext.q,
+                userAnswer: selectedOpt,
+                correctAnswer: qContext.correct,
+                explanation: qContext.exp,
+                isCorrect: isCorrect
+            });
+
+            if (isCorrect) {
+                btn.classList.add('correct');
+                score++;
+            } else {
+                btn.classList.add('wrong');
+                allBtns.forEach(b => {
+                    if(b.textContent === qContext.correct) b.classList.add('correct');
+                });
+            }
+
+            setTimeout(() => {
+                quizContent.classList.remove('fade-in');
+                quizContent.classList.add('fade-out');
+                
+                setTimeout(() => {
+                    currentQ++;
+                    if (currentQ < 10) {
+                        loadQuestion();
+                    } else {
+                        showResults();
+                    }
+                }, 300);
+            }, 1200);
+        }
+
+        function showResults() {
+            quizScreen.classList.add('hidden');
+            resultScreen.classList.remove('hidden');
+            progressEl.style.width = '100%';
+            
+            document.getElementById('score').textContent = `${score} / 10`;
+            document.getElementById('mensaje-final').textContent = `Excelente esfuerzo, ${nombreDistribuidor}. Este es tu reporte detallado:`;
+
+            userResponses.forEach((res, index) => {
+                const div = document.createElement('div');
+                div.classList.add('feedback-item');
+                div.classList.add(res.isCorrect ? 'success' : 'error');
+                
+                div.innerHTML = `
+                    <div class="feedback-q">${index + 1}. ${res.question}</div>
+                    <div class="feedback-ans" style="color: ${res.isCorrect ? '#28a745' : 'var(--dp-red)'}; font-weight: 500;">
+                        Tu respuesta: ${res.userAnswer}
+                    </div>
+                    ${!res.isCorrect ? `<div class="feedback-ans" style="color: #28a745; font-weight: 500;">Respuesta correcta: ${res.correctAnswer}</div>` : ''}
+                    <div class="feedback-exp">💡 <strong>Recordatorio dpvale:</strong> ${res.explanation}</div>
+                `;
+                feedbackContainer.appendChild(div);
+            });
+        }
+
+        function enviarCorreo() {
+            const btnEnvio = document.getElementById('enviar-btn');
+            const estadoTexto = document.getElementById('estado-envio');
+            
+            btnEnvio.disabled = true;
+            btnEnvio.textContent = "Enviando...";
+            estadoTexto.style.color = "#666";
+            estadoTexto.textContent = "Procesando...";
+
+            // =======================================================
+            // PEGA AQUÍ TU ENLACE DE FORMSPREE.IO
+            const formspreeEndpoint = "https://formspree.io/f/mwlkbdeq"; 
+            // =======================================================
+
+            let detalleRespuestas = userResponses.map((r, i) => 
+                `P${i+1}: ${r.question} | Su respuesta: ${r.userAnswer} (${r.isCorrect ? 'Correcta' : 'Incorrecta'})`
+            ).join('\n');
+
+            const datos = {
+                "Distribuidor": nombreDistribuidor,
+                "Calificación": `${score} de 10`,
+                "Desglose_Detallado": detalleRespuestas,
+                "Mensaje": `El distribuidor ${nombreDistribuidor} completó la evaluación con calificación de ${score}/10.`
+            };
+
+            if(formspreeEndpoint.includes("TU_CODIGO_AQUI")) {
+                setTimeout(() => {
+                    estadoTexto.style.color = "var(--dp-blue)";
+                    estadoTexto.textContent = "¡Modo prueba! Agrega tu enlace de Formspree para envíos reales.";
+                    btnEnvio.textContent = "Resultados Listos";
+                }, 1500);
+                return;
+            }
+
+            fetch(formspreeEndpoint, {
+                method: 'POST',
+                headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
+                body: JSON.stringify(datos)
+            })
+            .then(response => {
+                if (response.ok) {
+                    estadoTexto.style.color = "#28a745";
+                    estadoTexto.textContent = "¡Resultados enviados al gerente exitosamente!";
+                    btnEnvio.textContent = "Enviado Correctamente";
+                } else throw new Error('Error');
+            })
+            .catch(() => {
+                estadoTexto.style.color = "var(--dp-red)";
+                estadoTexto.textContent = "Error de conexión. Verifica tu internet e intenta de nuevo.";
+                btnEnvio.disabled = false;
+                btnEnvio.textContent = "Reintentar envío";
+            });
+        }
+    </script>
+</body>
+</html>
